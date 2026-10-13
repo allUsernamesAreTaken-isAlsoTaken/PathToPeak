@@ -21,18 +21,15 @@ services:
           name: pathtopeak-db
           property: connectionString
       - key: CORS_ORIGIN
-        fromService:
-          type: web
-          name: pathtopeak-frontend
-          property: host
+        value: "*"
 
   # 2. React + Vite Frontend (Static Site)
   - type: web
     name: pathtopeak-frontend
     runtime: static
     rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
+    buildCommand: npm install --include=dev && npm run build
+    staticPublishPath: ./dist
     routes:
       - type: rewrite
         source: /*
