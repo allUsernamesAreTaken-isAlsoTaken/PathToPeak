@@ -7,7 +7,7 @@ services:
     name: pathtopeak-backend
     runtime: node
     plan: free
-    buildCommand: npm install --include=dev && npm run build:backend
+    buildCommand: rm -rf package-lock.json node_modules && npm install --include=dev && npm run build:backend
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
@@ -28,7 +28,7 @@ services:
   - type: web
     name: pathtopeak-frontend
     runtime: static
-    buildCommand: npm install --include=dev && npm install @rolldown/binding-linux-x64-gnu@1.2.12 @tailwindcss/oxide-linux-x64-gnu --no-save && npm run build:frontend
+    buildCommand: rm -rf package-lock.json node_modules && npm install --include=dev && npm run build:frontend
     staticPublishPath: frontend/dist
     routes:
       - type: rewrite

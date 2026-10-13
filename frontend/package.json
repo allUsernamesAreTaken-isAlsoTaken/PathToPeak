@@ -24,9 +24,5 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "oxlint": "^1.81.0"
-  },
-  "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "1.2.12",
-    "@tailwindcss/oxide-linux-x64-gnu": "^4.3.3"
   }
 }
