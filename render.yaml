@@ -7,7 +7,7 @@ services:
     name: pathtopeak-backend
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build:backend
+    buildCommand: npm install --include=dev && npm run build:backend
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
@@ -28,7 +28,7 @@ services:
   - type: web
     name: pathtopeak-frontend
     runtime: static
-    buildCommand: npm install && npm run build:frontend
+    buildCommand: npm install --include=dev && npm run build:frontend
     staticPublishPath: frontend/dist
     routes:
       - type: rewrite
