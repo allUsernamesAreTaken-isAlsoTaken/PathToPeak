@@ -26,7 +26,8 @@ export const Navbar: React.FC = () => {
     currentAltitudeMeters,
     currentCamp,
     theme,
-    toggleTheme
+    toggleTheme,
+    isApiConnected,
   } = useApp();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -123,6 +124,19 @@ export const Navbar: React.FC = () => {
             >
               <Flame className="w-4 h-4 text-amber-400 fill-amber-400 animate-pulse" />
               <span>{profile.currentStreakDays}d streak</span>
+            </div>
+
+            {/* DB Status Pill */}
+            <div
+              title={isApiConnected ? 'Connected to Backend Database (Live Sync)' : 'Offline Mode (Local Mock State)'}
+              className={`hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
+                isApiConnected
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                  : 'bg-slate-500/10 border-slate-500/30 text-slate-400'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${isApiConnected ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`} />
+              <span>{isApiConnected ? 'DB Live' : 'Local'}</span>
             </div>
 
             {/* Theme Switcher Toggle */}

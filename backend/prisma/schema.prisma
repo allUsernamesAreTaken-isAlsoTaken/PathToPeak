@@ -1,0 +1,75 @@
+// Prisma schema for PathToPeak
+// Supports SQLite for zero-config local development and PostgreSQL for Render production
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model StudentProfile {
+  id                     String   @id @default("default-profile")
+  fullName               String
+  email                  String
+  branch                 String
+  currentYear            String
+  cgpa                   Float
+  dailyStudyHours        Float
+  targetPackage          String
+  completedTasksCount    Int      @default(0)
+  currentStreakDays      Int      @default(0)
+  currentElevationMeters Int      @default(0)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model Skill {
+  id                 String   @id
+  name               String
+  category           String
+  level              String
+  requiredFor        String   // JSON string: {"10 LPA": "...", "15 LPA": "...", "20 LPA": "..."}
+  description        String
+  practiceCount      Int      @default(0)
+  recommendedHours   Int      @default(0)
+  altitudeGainMeters Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Company {
+  id                 String   @id
+  name               String
+  industry           String
+  role               String
+  ctcBracket         String
+  minCgpa            Float
+  location           String
+  hiringType         String
+  deadlineDate       String
+  daysRemaining      Int
+  logoInitial        String
+  accentColor        String
+  ascentMatchPercent Int
+  interviewStages    String   // JSON string
+  keySkills          String   // JSON string
+  resources          String   // JSON string
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model PlannerTask {
+  id              String   @id
+  domain          String
+  title           String
+  durationMinutes Int
+  completed       Boolean  @default(false)
+  priority        String
+  dueTime         String
+  timeBlock       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

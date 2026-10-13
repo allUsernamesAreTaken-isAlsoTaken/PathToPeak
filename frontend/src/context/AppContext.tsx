@@ -16,6 +16,7 @@ import {
   mockCompanies,
   initialDailyTasks
 } from '../data/mockData';
+import { api } from '../services/api';
 
 interface AppContextType {
   activeView: ViewType;
@@ -37,6 +38,8 @@ interface AppContextType {
     timeBlock?: PlannerTask['timeBlock']
   ) => void;
   deleteTask: (taskId: string) => void;
+  isApiConnected: boolean;
+  isLoading: boolean;
   
   // Derived state
   readinessScore: number;
@@ -73,8 +76,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [theme, setTheme] = useState<AppTheme>('summit-dark');
   const [profile, setProfile] = useState<StudentProfile>(initialStudentProfile);
   const [skills, setSkills] = useState<SkillItem[]>(initialSkills);
-  const [companies] = useState<Company[]>(mockCompanies);
+  const [companies, setCompanies] = useState<Company[]>(mockCompanies);
   const [tasks, setTasks] = useState<PlannerTask[]>(initialDailyTasks);
+  const [isApiConnected, setIsApiConnected] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Fetch from backend API on mount, with silent fallback to mock data
+  useEffect(() => {
+    let isMounted = true;
+    const fetchApiData = async () => {
+      try {
+        setIsLoading(true);
+        const [fetchedProfile, fetchedSkills, fetchedCompanies, fetchedTasks] = await Promise.all([
+          api.getProfile().catch(() => null),
+          api.getSkills().catch(() => null),
+          api.getCompanies().catch(() => null),
+          api.getTasks().catch(() => null),
+        ]);
+
+        if (isMounted) {
+          if (fetchedProfile) setProfile(fetchedProfile);
+          if (fetchedSkills && fetchedSkills.length > 0) setSkills(fetchedSkills);
+          if (fetchedCompanies && fetchedCompanies.length > 0) setCompanies(fetchedCompanies);
+          if (fetchedTasks && fetchedTasks.length > 0) setTasks(fetchedTasks);
+          
+          if (fetchedProfile || fetchedSkills || fetchedCompanies || fetchedTasks) {
+            setIsApiConnected(true);
+          }
+        }
+      } catch (err) {
+        console.warn('Backend API unavailable, using local mock data:', err);
+        if (isMounted) {
+          setIsApiConnected(false);
+        }
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    fetchApiData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const toggleTheme = () => {
     setTheme(prev => (prev === 'summit-dark' ? 'glacier-light' : 'summit-dark'));
@@ -90,12 +134,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateProfile = (updates: Partial<StudentProfile>) => {
     setProfile(prev => ({ ...prev, ...updates }));
+    api.updateProfile(updates).catch((err) => {
+      console.warn('Failed to sync profile with API:', err);
+    });
   };
 
   const updateSkillLevel = (skillId: string, level: SkillLevel) => {
     setSkills(prev =>
       prev.map(item => (item.id === skillId ? { ...item, level } : item))
     );
+    api.updateSkillLevel(skillId, level).catch((err) => {
+      console.warn('Failed to sync skill level with API:', err);
+    });
   };
 
   const toggleTask = (taskId: string) => {
@@ -104,23 +154,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (task.id === taskId) {
           const newCompleted = !task.completed;
           if (newCompleted) {
-            setProfile(p => ({
-              ...p,
-              completedTasksCount: p.completedTasksCount + 1,
-              currentElevationMeters: Math.min(8848, p.currentElevationMeters + 85),
-            }));
+            setProfile(p => {
+              const updated = {
+                ...p,
+                completedTasksCount: p.completedTasksCount + 1,
+                currentElevationMeters: Math.min(8848, p.currentElevationMeters + 85),
+              };
+              api.updateProfile(updated).catch(() => {});
+              return updated;
+            });
           } else {
-            setProfile(p => ({
-              ...p,
-              completedTasksCount: Math.max(0, p.completedTasksCount - 1),
-              currentElevationMeters: Math.max(1500, p.currentElevationMeters - 85),
-            }));
+            setProfile(p => {
+              const updated = {
+                ...p,
+                completedTasksCount: Math.max(0, p.completedTasksCount - 1),
+                currentElevationMeters: Math.max(1500, p.currentElevationMeters - 85),
+              };
+              api.updateProfile(updated).catch(() => {});
+              return updated;
+            });
           }
           return { ...task, completed: newCompleted };
         }
         return task;
       })
     );
+    api.toggleTask(taskId).catch((err) => {
+      console.warn('Failed to sync task toggle with API:', err);
+    });
   };
 
   const addTask = (
@@ -141,10 +202,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       timeBlock,
     };
     setTasks(prev => [newTask, ...prev]);
+    api.addTask(newTask).catch((err) => {
+      console.warn('Failed to sync new task with API:', err);
+    });
   };
 
   const deleteTask = (taskId: string) => {
     setTasks(prev => prev.filter(t => t.id !== taskId));
+    api.deleteTask(taskId).catch((err) => {
+      console.warn('Failed to sync task deletion with API:', err);
+    });
   };
 
   // Skill Gaps, Altitude & Readiness Calculation
@@ -246,6 +313,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         priorityGaps,
         hoursAllocation,
         eligibleCompaniesCount,
+        isApiConnected,
+        isLoading,
       }}
     >
       {children}
