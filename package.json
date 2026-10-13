@@ -13,7 +13,8 @@
     "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
     "build:frontend": "npm run build --workspace=frontend",
     "build:backend": "npm run build --workspace=backend",
-    "start": "npm start --workspace=backend",
+    "start": "npm run db:deploy --workspace=backend && npm start --workspace=backend",
+    "start:backend": "npm run db:deploy --workspace=backend && npm start --workspace=backend",
     "lint": "npm run lint --workspace=frontend"
   },
   "devDependencies": {

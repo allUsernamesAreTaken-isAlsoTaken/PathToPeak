@@ -6,12 +6,13 @@ services:
   - type: web
     name: pathtopeak-backend
     runtime: node
-    rootDir: backend
     plan: free
-    buildCommand: npm install && npm run build
-    startCommand: npm run db:deploy && npm start
+    buildCommand: npm install && npm run build:backend
+    startCommand: npm start
     healthCheckPath: /api/health
     envVars:
+      - key: NODE_VERSION
+        value: 22
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -20,8 +21,6 @@ services:
         fromDatabase:
           name: pathtopeak-db
           property: connectionString
-      - key: NODE_VERSION
-        value: 22
       - key: CORS_ORIGIN
         value: "*"
 
@@ -29,9 +28,8 @@ services:
   - type: web
     name: pathtopeak-frontend
     runtime: static
-    rootDir: frontend
-    buildCommand: npm install --include=dev && npm run build
-    staticPublishPath: ./dist
+    buildCommand: npm install && npm run build:frontend
+    staticPublishPath: frontend/dist
     routes:
       - type: rewrite
         source: /*
