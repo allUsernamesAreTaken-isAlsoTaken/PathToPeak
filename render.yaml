@@ -20,6 +20,8 @@ services:
         fromDatabase:
           name: pathtopeak-db
           property: connectionString
+      - key: NODE_VERSION
+        value: 22
       - key: CORS_ORIGIN
         value: "*"
 
@@ -35,6 +37,8 @@ services:
         source: /*
         destination: /index.html
     envVars:
+      - key: NODE_VERSION
+        value: 22
       - key: VITE_API_URL
         fromService:
           type: web
